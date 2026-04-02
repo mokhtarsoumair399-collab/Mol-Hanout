@@ -8,6 +8,7 @@
 nvm use
 npm install
 npx expo start
+eas build -p android --profile preview
 ```
 
 ## متطلبات البيئة
@@ -15,6 +16,19 @@ npx expo start
 - هذا المشروع يعمل الآن على `Expo SDK 54`.
 - لتشغيله بشكل صحيح استعمل `Node 20.19.4` أو أحدث.
 - إذا كان جهازك ما زال على `Node 18` فسيظهر خطأ مثل `toReversed is not a function`.
+
+## بناء Android و iOS
+
+```bash
+npm install
+npx eas login
+npx eas build -p android --profile production
+npx eas build -p ios --profile production
+```
+
+- ملف إعداد EAS موجود الآن في `eas.json`.
+- المشروع جاهز لـ Android package: `com.molhanout.app`
+- المشروع جاهز لـ iOS bundle identifier: `com.molhanout.app`
 
 ## المزايا
 

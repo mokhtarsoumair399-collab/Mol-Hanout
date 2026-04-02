@@ -13,6 +13,8 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.molhanout.app",
+      "buildNumber": "1.0.0",
       "supportsTablet": true,
       "infoPlist": {
         "NSContactsUsageDescription": "يستعمل التطبيق جهات الاتصال لاختيار رقم الزبون بسرعة."
@@ -20,13 +22,24 @@
     },
     "android": {
       "package": "com.molhanout.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/app-icon.png",
         "backgroundColor": "#F4E1C1"
       },
       "permissions": [
-        "READ_CONTACTS"
+        "READ_CONTACTS",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS"
       ]
+    },
+    "plugins": [
+      "expo-contacts"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ddbfcd82-14c7-4437-a72c-994410875ce5"
+      }
     }
   }
 }
