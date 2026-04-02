@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Mol Hanout",
+    "slug": "mol-hanout",
+    "version": "1.0.0",
+    "icon": "./assets/app-icon.png",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F4E1C1"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSContactsUsageDescription": "يستعمل التطبيق جهات الاتصال لاختيار رقم الزبون بسرعة."
+      }
+    },
+    "android": {
+      "package": "com.molhanout.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/app-icon.png",
+        "backgroundColor": "#F4E1C1"
+      },
+      "permissions": [
+        "READ_CONTACTS"
+      ]
+    }
+  }
+}
