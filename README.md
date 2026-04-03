@@ -44,3 +44,8 @@ npx eas build -p ios --profile production
 - التطبيق يبدأ ببيانات تجريبية لتجربة الواجهة بسرعة.
 - كل النصوص المعروضة للمستخدم بالعربية.
 - تم تفعيل دعم RTL داخل التطبيق، وقد يحتاج أول تشغيل إلى إعادة تحميل واحدة على بعض الأجهزة حتى يثبت الاتجاه بالكامل.
+
+
+Contact  Co-Founders:
+Mokhtar Soumair : https://www.linkedin.com/in/mokhtar-soumair-4b8855394/
+Houssam Essaki  : https://www.linkedin.com/in/houssam-essaki/
