@@ -61,6 +61,7 @@ npx eas build -p ios --profile production
 * App starts with demo data.
 * UI is بالكامل in Arabic.
 * RTL is enabled; first launch may require reload on some devices.
+* Fixed a bug that occurred when opening the clients.
 
 ## Contact Co-Founders
 
@@ -124,6 +125,7 @@ npx eas build -p ios --profile production
 * التطبيق يبدأ ببيانات تجريبية.
 * الواجهة بالعربية بالكامل.
 * دعم RTL مفعل وقد يتطلب إعادة تحميل أول مرة.
+* تم إصلاح مشكلة عند فتح صفحة الزبائن.
 
 ## المؤسسون
 
@@ -186,6 +188,7 @@ npx eas build -p ios --profile production
 * Données de démonstration incluses.
 * Interface en arabe.
 * Support RTL activé.
+* Correction d'un bug lors de l'ouverture des clients.
 
 ---
 
@@ -234,6 +237,10 @@ npx eas build -p ios --profile production
 * Botón de prueba para enviar una notificación inmediata.
 * Almacenamiento local.
 
+## Notas
+
+* Se corrigió un error al abrir los clientes.
+
 ---
 
 ## 🇩🇪 Deutsch
@@ -280,5 +287,9 @@ npx eas build -p ios --profile production
 * Transaktionshistorie.
 * WhatsApp-Erinnerungen.
 * Lokaler Speicher.
+
+## Hinweise
+
+* Behebung eines Fehlers beim Öffnen der Kunden.
 
 ---

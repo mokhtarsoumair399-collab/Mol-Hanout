@@ -23,7 +23,8 @@ const DashboardScreen: React.FC = () => {
     deleteInventoryItem,
     sendBulkWhatsAppMessages,
   } = useAppContext();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation();
+  const rootNavigation = navigation.getParent?.();
   const topDebtor = getTopDebtor(customers);
   const topDebtorBalance = topDebtor ? getCustomerBalance(topDebtor) : 0;
   const customersWithReminder = customers.filter((customer) => customer.debtReminderSettings.enabled);
@@ -216,7 +217,7 @@ const DashboardScreen: React.FC = () => {
             <Pressable
               key={customer.id}
               style={({ pressed }) => [styles.customerRow, pressed && styles.customerRowPressed]}
-              onPress={() => navigation.navigate('CustomerDetail', { customerId: customer.id })}
+              onPress={() => rootNavigation?.navigate('CustomerDetail', { customerId: customer.id })}
             >
               <View style={styles.customerInfo}>
                 <Text style={styles.customerName}>{customer.name}</Text>
@@ -243,7 +244,7 @@ const DashboardScreen: React.FC = () => {
         {customers.length > 5 && (
           <Pressable
             style={({ pressed }) => [styles.showMoreButton, pressed && styles.showMorePressed]}
-            onPress={() => (navigation as any).navigate('Customers')}
+            onPress={() => rootNavigation?.navigate('Customers')}
           >
             <Text style={styles.showMoreText}>عرض جميع الزبائن ({customers.length})</Text>
           </Pressable>
