@@ -1,4 +1,5 @@
 import { Customer } from '../utils/types';
+import { defaultDebtReminderSettings } from '../utils/factories';
 
 export const seedCustomers: Customer[] = [
   {
@@ -23,6 +24,7 @@ export const seedCustomers: Customer[] = [
         date: '2026-03-30T12:00:00.000Z',
       },
     ],
+    debtReminderSettings: defaultDebtReminderSettings,
   },
   {
     id: 'customer-2',
@@ -39,6 +41,11 @@ export const seedCustomers: Customer[] = [
         date: '2026-04-02T11:30:00.000Z',
       },
     ],
+    debtReminderSettings: {
+      enabled: true,
+      hour: 10,
+      minute: 30,
+    },
   },
   {
     id: 'customer-3',
@@ -62,6 +69,7 @@ export const seedCustomers: Customer[] = [
         date: '2026-03-31T13:00:00.000Z',
       },
     ],
+    debtReminderSettings: defaultDebtReminderSettings,
   },
   {
     id: 'customer-4',
@@ -78,5 +86,10 @@ export const seedCustomers: Customer[] = [
         date: '2026-03-28T17:45:00.000Z',
       },
     ],
+    debtReminderSettings: {
+      enabled: true,
+      hour: 18,
+      minute: 0,
+    },
   },
 ];

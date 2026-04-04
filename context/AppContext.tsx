@@ -1,8 +1,20 @@
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { seedCustomers } from '../storage/demoData';
 import { loadCustomers, saveCustomers } from '../storage/appStorage';
-import { Customer, CustomerInput, Transaction, TransactionInput } from '../utils/types';
+import { defaultDebtReminderSettings } from '../utils/factories';
+import {
+  requestDebtNotificationPermission,
+  sendDebtReminderTestNotification,
+  syncDebtNotifications,
+} from '../utils/notifications';
+import {
+  Customer,
+  CustomerInput,
+  DebtReminderSettings,
+  Transaction,
+  TransactionInput,
+} from '../utils/types';
 import { createCustomer, createTransaction } from '../utils/factories';
 
 type AppContextValue = {
@@ -14,6 +26,12 @@ type AppContextValue = {
   addTransaction: (customerId: string, input: TransactionInput) => void;
   deleteTransaction: (customerId: string, transactionId: string) => void;
   deleteAllDebtsForCustomer: (customerId: string) => void;
+  updateCustomerDebtReminder: (
+    customerId: string,
+    settings: Partial<DebtReminderSettings>,
+  ) => void;
+  setCustomerDebtReminderEnabled: (customerId: string, enabled: boolean) => Promise<boolean>;
+  testCustomerDebtReminder: (customerId: string) => Promise<boolean>;
   getCustomerById: (customerId: string) => Customer | undefined;
 };
 
@@ -46,6 +64,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
         Alert.alert('تنبيه', 'تعذر حفظ التغييرات محلياً.');
       });
     }
+  }, [customers, loading]);
+
+  useEffect(() => {
+    if (loading || Platform.OS === 'web') {
+      return;
+    }
+
+    syncDebtNotifications(customers).catch(() => {
+      Alert.alert('تنبيه', 'تعذر تحديث التذكير التلقائي بالديون.');
+    });
   }, [customers, loading]);
 
   const value = useMemo<AppContextValue>(
@@ -115,6 +143,75 @@ export function AppProvider({ children }: { children: ReactNode }) {
               : customer,
           ),
         );
+      },
+      updateCustomerDebtReminder: (customerId, settings) => {
+        setCustomers((current) =>
+          current.map((customer) =>
+            customer.id === customerId
+              ? {
+                  ...customer,
+                  debtReminderSettings: {
+                    ...defaultDebtReminderSettings,
+                    ...customer.debtReminderSettings,
+                    ...settings,
+                  },
+                  updatedAt: new Date().toISOString(),
+                }
+              : customer,
+          ),
+        );
+      },
+      setCustomerDebtReminderEnabled: async (customerId, enabled) => {
+        if (Platform.OS === 'web') {
+          Alert.alert('تنبيه', 'الإشعارات المحلية غير مدعومة حالياً على الويب.');
+          return false;
+        }
+
+        if (enabled) {
+          const granted = await requestDebtNotificationPermission();
+          if (!granted) {
+            Alert.alert('تنبيه', 'يجب السماح بالإشعارات لتفعيل التذكير التلقائي.');
+            return false;
+          }
+        }
+
+        setCustomers((current) =>
+          current.map((customer) =>
+            customer.id === customerId
+              ? {
+                  ...customer,
+                  debtReminderSettings: {
+                    ...defaultDebtReminderSettings,
+                    ...customer.debtReminderSettings,
+                    enabled,
+                  },
+                  updatedAt: new Date().toISOString(),
+                }
+              : customer,
+          ),
+        );
+        return true;
+      },
+      testCustomerDebtReminder: async (customerId) => {
+        if (Platform.OS === 'web') {
+          Alert.alert('تنبيه', 'اختبار الإشعارات غير مدعوم حالياً على الويب.');
+          return false;
+        }
+
+        const customer = customers.find((item) => item.id === customerId);
+        if (!customer) {
+          Alert.alert('تنبيه', 'تعذر العثور على الزبون لاختبار التذكير.');
+          return false;
+        }
+
+        const granted = await requestDebtNotificationPermission();
+        if (!granted) {
+          Alert.alert('تنبيه', 'يجب السماح بالإشعارات قبل تنفيذ الاختبار.');
+          return false;
+        }
+
+        await sendDebtReminderTestNotification(customer);
+        return true;
       },
       getCustomerById: (customerId) => customers.find((customer) => customer.id === customerId),
     }),

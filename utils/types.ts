@@ -8,6 +8,12 @@ export type Transaction = {
   date: string;
 };
 
+export type DebtReminderSettings = {
+  enabled: boolean;
+  hour: number;
+  minute: number;
+};
+
 export type Customer = {
   id: string;
   name: string;
@@ -15,6 +21,7 @@ export type Customer = {
   createdAt: string;
   updatedAt: string;
   transactions: Transaction[];
+  debtReminderSettings: DebtReminderSettings;
 };
 
 export type CustomerInput = {

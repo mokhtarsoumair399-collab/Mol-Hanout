@@ -14,10 +14,10 @@
     ],
     "ios": {
       "bundleIdentifier": "com.molhanout.app",
-      "buildNumber": "1.0.0",
       "supportsTablet": true,
       "infoPlist": {
-        "NSContactsUsageDescription": "يستعمل التطبيق جهات الاتصال لاختيار رقم الزبون بسرعة."
+        "NSContactsUsageDescription": "يستعمل التطبيق جهات الاتصال لاختيار رقم الزبون بسرعة.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -30,11 +30,13 @@
       "permissions": [
         "READ_CONTACTS",
         "android.permission.READ_CONTACTS",
-        "android.permission.WRITE_CONTACTS"
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "plugins": [
-      "expo-contacts"
+      "expo-contacts",
+      "expo-notifications"
     ],
     "extra": {
       "eas": {

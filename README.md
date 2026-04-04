@@ -47,6 +47,10 @@ npx eas build -p ios --profile production
 * Dashboard with total debts, number of customers, and top debtors.
 * Customer detail screen with transaction history.
 * WhatsApp reminder button.
+* Automatic daily local notifications configurable per customer.
+* Per-customer reminder dropdown with a built-in time picker.
+* Instant test notification button for checking reminder delivery.
+* Toast feedback when saving or changing reminder settings.
 * Offline-first storage using `AsyncStorage`.
 
 ## Notes
@@ -103,6 +107,10 @@ npx eas build -p ios --profile production
 * لوحة ملخص تعرض إجمالي الديون وعدد الزبائن وأكبر المدينين.
 * شاشة تفاصيل لكل زبون مع سجل المعاملات.
 * زر إرسال تذكير عبر واتساب.
+* إشعارات محلية تلقائية يومية قابلة للتخصيص لكل زبون.
+* قسم منسدل لكل زبون لإعداد التذكير مع منتقي وقت.
+* زر اختبار فوري لإرسال إشعار تجريبي مباشرة.
+* رسائل Toast عند حفظ إعدادات التذكير أو تغييرها.
 * تخزين محلي باستخدام `AsyncStorage`.
 
 ## ملاحظات
@@ -159,6 +167,9 @@ npx eas build -p ios --profile production
 * Tableau de bord avec statistiques.
 * Détails client avec historique.
 * Rappel WhatsApp.
+* Notifications locales quotidiennes configurables par client.
+* Sélecteur d'heure intégré dans le rappel de chaque client.
+* Bouton de test pour envoyer une notification immédiate.
 * Stockage local (`AsyncStorage`).
 
 ## Notes
@@ -206,6 +217,9 @@ npx eas build -p ios --profile production
 * Panel con estadísticas.
 * Historial de transacciones.
 * Recordatorios por WhatsApp.
+* Notificaciones locales diarias configurables por cliente.
+* Selector de hora integrado para el recordatorio de cada cliente.
+* Botón de prueba para enviar una notificación inmediata.
 * Almacenamiento local.
 
 ---
@@ -245,9 +259,11 @@ npx eas build -p ios --profile production
 * Kundenverwaltung.
 * Schuldenverfolgung.
 * Dashboard mit Statistiken.
+* WhatsApp-Erinnerungen.
+* Tägliche lokale Benachrichtigungen pro Kunde konfigurierbar.
+* Integrierter Zeitwähler und Soforttest für Kundenerinnerungen.
 * Transaktionshistorie.
 * WhatsApp-Erinnerungen.
 * Lokaler Speicher.
 
 ---
-

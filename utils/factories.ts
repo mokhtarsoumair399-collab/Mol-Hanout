@@ -1,4 +1,10 @@
-import { Customer, CustomerInput, Transaction, TransactionInput } from './types';
+import { Customer, CustomerInput, DebtReminderSettings, Transaction, TransactionInput } from './types';
+
+export const defaultDebtReminderSettings: DebtReminderSettings = {
+  enabled: false,
+  hour: 9,
+  minute: 0,
+};
 
 function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
@@ -14,6 +20,7 @@ export function createCustomer(input: CustomerInput): Customer {
     createdAt: now,
     updatedAt: now,
     transactions: [],
+    debtReminderSettings: defaultDebtReminderSettings,
   };
 }
 
