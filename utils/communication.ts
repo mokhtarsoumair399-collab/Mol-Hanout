@@ -1,7 +1,7 @@
 import { Alert, Linking } from 'react-native';
 import { Customer } from './types';
 import { normalizePhoneNumber } from './formatters';
-import { sendWhatsAppMessage } from './whatsapp';
+import { sendWhatsAppMessage, WhatsAppMessageType } from './whatsapp';
 
 function getPhoneOrAlert(customer: Customer) {
   const phone = normalizePhoneNumber(customer.phone);
@@ -42,6 +42,11 @@ export async function sendSmsMessage(customer: Customer) {
   await openUrl(`sms:${phone}`, 'تعذر فتح تطبيق الرسائل على هذا الجهاز.');
 }
 
-export async function openWhatsAppChat(customer: Customer, dueDate?: string) {
-  await sendWhatsAppMessage(customer, dueDate);
+export async function openWhatsAppChat(
+  customer: Customer, 
+  messageType: WhatsAppMessageType = 'reminder',
+  dueDate?: string,
+  customMessage?: string
+) {
+  await sendWhatsAppMessage(customer, messageType, dueDate, customMessage);
 }

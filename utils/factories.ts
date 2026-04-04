@@ -1,9 +1,16 @@
-import { Customer, CustomerInput, DebtReminderSettings, Transaction, TransactionInput } from './types';
+import { Customer, CustomerInput, DebtReminderSettings, Transaction, TransactionInput, WhatsAppAutoMessageSettings } from './types';
 
 export const defaultDebtReminderSettings: DebtReminderSettings = {
   enabled: false,
   hour: 9,
   minute: 0,
+};
+
+export const defaultWhatsAppAutoMessageSettings: WhatsAppAutoMessageSettings = {
+  enabled: false,
+  messageType: 'reminder',
+  followupDelayDays: 7,
+  autoSendOnPayment: false,
 };
 
 function createId(prefix: string) {
@@ -21,6 +28,7 @@ export function createCustomer(input: CustomerInput): Customer {
     updatedAt: now,
     transactions: [],
     debtReminderSettings: defaultDebtReminderSettings,
+    whatsAppAutoMessageSettings: defaultWhatsAppAutoMessageSettings,
   };
 }
 

@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { Alert, Platform } from 'react-native';
-import { seedCustomers } from '../storage/demoData';
+import { seedCustomers, seedInventory } from '../storage/demoData';
 import { loadCustomers, saveCustomers } from '../storage/appStorage';
 import { defaultDebtReminderSettings } from '../utils/factories';
 import {
@@ -14,11 +14,15 @@ import {
   DebtReminderSettings,
   Transaction,
   TransactionInput,
+  InventoryItem,
+  InventoryInput,
+  WhatsAppAutoMessageSettings,
 } from '../utils/types';
 import { createCustomer, createTransaction } from '../utils/factories';
 
 type AppContextValue = {
   customers: Customer[];
+  inventory: InventoryItem[];
   loading: boolean;
   addCustomer: (input: CustomerInput) => void;
   updateCustomer: (customerId: string, input: CustomerInput) => void;
@@ -32,13 +36,28 @@ type AppContextValue = {
   ) => void;
   setCustomerDebtReminderEnabled: (customerId: string, enabled: boolean) => Promise<boolean>;
   testCustomerDebtReminder: (customerId: string) => Promise<boolean>;
+  updateCustomerWhatsAppSettings: (
+    customerId: string,
+    settings: Partial<WhatsAppAutoMessageSettings>,
+  ) => void;
+  setCustomerWhatsAppAutoMessageEnabled: (customerId: string, enabled: boolean) => Promise<boolean>;
+  sendBulkWhatsAppMessages: (
+    customerIds: string[],
+    messageType?: 'reminder' | 'followup' | 'payment_confirmation' | 'custom',
+    dueDate?: string,
+    customMessage?: string
+  ) => Promise<{ successCount: number; failCount: number }>;
   getCustomerById: (customerId: string) => Customer | undefined;
+  addInventoryItem: (input: InventoryInput) => void;
+  updateInventoryItem: (itemId: string, input: InventoryInput) => void;
+  deleteInventoryItem: (itemId: string) => void;
 };
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,8 +65,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         const storedCustomers = await loadCustomers();
         setCustomers(storedCustomers.length ? storedCustomers : seedCustomers);
+        setInventory(seedInventory);
       } catch (error) {
         setCustomers(seedCustomers);
+        setInventory(seedInventory);
         Alert.alert('تنبيه', 'تعذر تحميل البيانات المحلية، تم فتح البيانات التجريبية.');
       } finally {
         setLoading(false);
@@ -79,6 +100,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppContextValue>(
     () => ({
       customers,
+      inventory,
       loading,
       addCustomer: (input) => {
         setCustomers((current) => [createCustomer(input), ...current]);
@@ -214,8 +236,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return true;
       },
       getCustomerById: (customerId) => customers.find((customer) => customer.id === customerId),
+      addInventoryItem: (input) => {
+        const newItem: InventoryItem = {
+          id: `inv-${Date.now()}`,
+          ...input,
+        };
+        setInventory((current) => [newItem, ...current]);
+      },
+      updateInventoryItem: (itemId, input) => {
+        setInventory((current) =>
+          current.map((item) =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  ...input,
+                }
+              : item,
+          ),
+        );
+      },
+      deleteInventoryItem: (itemId) => {
+        setInventory((current) => current.filter((item) => item.id !== itemId));
+      },
+      updateCustomerWhatsAppSettings: (customerId, settings) => {
+        setCustomers((current) =>
+          current.map((customer) =>
+            customer.id === customerId
+              ? {
+                  ...customer,
+                  whatsAppAutoMessageSettings: {
+                    ...customer.whatsAppAutoMessageSettings,
+                    ...settings,
+                  },
+                  updatedAt: new Date().toISOString(),
+                }
+              : customer,
+          ),
+        );
+      },
+      setCustomerWhatsAppAutoMessageEnabled: async (customerId, enabled) => {
+        setCustomers((current) =>
+          current.map((customer) =>
+            customer.id === customerId
+              ? {
+                  ...customer,
+                  whatsAppAutoMessageSettings: {
+                    ...customer.whatsAppAutoMessageSettings,
+                    enabled,
+                  },
+                  updatedAt: new Date().toISOString(),
+                }
+              : customer,
+          ),
+        );
+        return true;
+      },
+      sendBulkWhatsAppMessages: async (customerIds, messageType = 'reminder', dueDate, customMessage) => {
+        const customersToMessage = customers.filter(customer => customerIds.includes(customer.id));
+        const { sendBulkWhatsAppMessages } = await import('../utils/whatsapp');
+        return sendBulkWhatsAppMessages(customersToMessage, messageType, dueDate, customMessage);
+      },
     }),
-    [customers, loading],
+    [customers, inventory, loading],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -11,15 +11,19 @@ export function ScreenContainer({
 }) {
   if (!scrollable) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <View style={styles.content}>{children}</View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <ScrollView 
+        contentContainerStyle={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentInsetAdjustmentBehavior="automatic"
+      >
         {children}
       </ScrollView>
     </SafeAreaView>
@@ -29,9 +33,12 @@ export function ScreenContainer({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: '#F4E1C1', // Match the app's background color
   },
   content: {
-    padding: 16,
-    gap: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    paddingBottom: 40, // Extra bottom padding for better scrolling experience
+    gap: 20,
   },
 });

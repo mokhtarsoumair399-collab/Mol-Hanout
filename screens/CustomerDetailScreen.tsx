@@ -35,6 +35,8 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
     updateCustomerDebtReminder,
     setCustomerDebtReminderEnabled,
     testCustomerDebtReminder,
+    updateCustomerWhatsAppSettings,
+    setCustomerWhatsAppAutoMessageEnabled,
   } = useAppContext();
   const customer = getCustomerById(route.params.customerId);
   const [modalVisible, setModalVisible] = useState(false);
@@ -53,6 +55,9 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
     initialDate.setMilliseconds(0);
     return initialDate;
   });
+  const [whatsAppExpanded, setWhatsAppExpanded] = useState(false);
+  const [whatsAppMessageType, setWhatsAppMessageType] = useState<'reminder' | 'followup' | 'both'>('reminder');
+  const [followupDelayDays, setFollowupDelayDays] = useState(7);
 
   const balance = useMemo(() => (customer ? getCustomerBalance(customer) : 0), [customer]);
   const reminderTimeLabel = useMemo(
@@ -183,9 +188,9 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
 
   const handleSendWhatsApp = async () => {
     if (includeDueDate) {
-      await openWhatsAppChat(customer, formatDateToIso(paymentDueDate));
+      await openWhatsAppChat(customer, 'reminder', formatDateToIso(paymentDueDate));
     } else {
-      await openWhatsAppChat(customer);
+      await openWhatsAppChat(customer, 'reminder');
     }
 
     resetWhatsAppModal();
@@ -197,6 +202,28 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
       minute: reminderTime.getMinutes(),
     });
     showToast('تم حفظ وقت التذكير لهذا الزبون.');
+  };
+
+  const handleToggleWhatsAppAutoMessage = async () => {
+    if (!customer.phone && !customer.whatsAppAutoMessageSettings.enabled) {
+      Alert.alert('تنبيه', 'لا يوجد رقم هاتف لهذا الزبون. يرجى إضافة رقم هاتف أولاً.');
+      return;
+    }
+
+    const nextEnabled = !customer.whatsAppAutoMessageSettings.enabled;
+    await setCustomerWhatsAppAutoMessageEnabled(customer.id, nextEnabled);
+
+    showToast(
+      nextEnabled ? 'تم تفعيل الرسائل التلقائية عبر واتساب لهذا الزبون.' : 'تم إيقاف الرسائل التلقائية لهذا الزبون.',
+    );
+  };
+
+  const handleSaveWhatsAppSettings = () => {
+    updateCustomerWhatsAppSettings(customer.id, {
+      messageType: whatsAppMessageType,
+      followupDelayDays: followupDelayDays,
+    });
+    showToast('تم حفظ إعدادات الرسائل عبر واتساب.');
   };
 
   const handleToggleReminder = async () => {
@@ -300,6 +327,116 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
             </>
           ) : null}
         </View>
+
+        <View style={styles.reminderCard}>
+          <Pressable
+            onPress={() => setWhatsAppExpanded((current) => !current)}
+            style={({ pressed }) => [styles.reminderHeader, pressed && styles.reminderHeaderPressed]}
+          >
+            <View style={styles.reminderHeaderTextWrap}>
+              <Text style={styles.reminderTitle}>💬 رسائل واتساب التلقائية</Text>
+              <Text style={styles.helperText}>
+                {customer.whatsAppAutoMessageSettings.enabled
+                  ? `مفعل - ${customer.whatsAppAutoMessageSettings.messageType === 'both' ? 'تذكير + متابعة' : customer.whatsAppAutoMessageSettings.messageType === 'followup' ? 'متابعة فقط' : 'تذكير فقط'}`
+                  : 'فعّل الرسائل التلقائية عبر واتساب لهذا الزبون.'}
+              </Text>
+            </View>
+            <Text style={styles.reminderChevron}>{whatsAppExpanded ? '▲' : '▼'}</Text>
+          </Pressable>
+          {whatsAppExpanded ? (
+            <>
+              <Text style={styles.inputLabel}>نوع الرسالة</Text>
+              <View style={styles.messageTypeGrid}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.messageTypeButton,
+                    whatsAppMessageType === 'reminder' && styles.messageTypeButtonActive,
+                    pressed && styles.messageTypeButtonPressed
+                  ]}
+                  onPress={() => setWhatsAppMessageType('reminder')}
+                >
+                  <Text style={[
+                    styles.messageTypeText,
+                    whatsAppMessageType === 'reminder' && styles.messageTypeTextActive
+                  ]}>
+                    تذكير فقط
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.messageTypeButton,
+                    whatsAppMessageType === 'followup' && styles.messageTypeButtonActive,
+                    pressed && styles.messageTypeButtonPressed
+                  ]}
+                  onPress={() => setWhatsAppMessageType('followup')}
+                >
+                  <Text style={[
+                    styles.messageTypeText,
+                    whatsAppMessageType === 'followup' && styles.messageTypeTextActive
+                  ]}>
+                    متابعة فقط
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.messageTypeButton,
+                    whatsAppMessageType === 'both' && styles.messageTypeButtonActive,
+                    pressed && styles.messageTypeButtonPressed
+                  ]}
+                  onPress={() => setWhatsAppMessageType('both')}
+                >
+                  <Text style={[
+                    styles.messageTypeText,
+                    whatsAppMessageType === 'both' && styles.messageTypeTextActive
+                  ]}>
+                    تذكير + متابعة
+                  </Text>
+                </Pressable>
+              </View>
+
+              {(whatsAppMessageType === 'followup' || whatsAppMessageType === 'both') && (
+                <>
+                  <Text style={styles.inputLabel}>أيام التأخير للمتابعة</Text>
+                  <View style={styles.delayGrid}>
+                    {[3, 5, 7, 10, 14].map((days) => (
+                      <Pressable
+                        key={days}
+                        style={({ pressed }) => [
+                          styles.delayButton,
+                          followupDelayDays === days && styles.delayButtonActive,
+                          pressed && styles.delayButtonPressed
+                        ]}
+                        onPress={() => setFollowupDelayDays(days)}
+                      >
+                        <Text style={[
+                          styles.delayText,
+                          followupDelayDays === days && styles.delayTextActive
+                        ]}>
+                          {days} يوم
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </>
+              )}
+
+              <View style={styles.actionGrid}>
+                <PrimaryButton
+                  style={styles.flexButton}
+                  title="💾 حفظ الإعدادات"
+                  variant="secondary"
+                  onPress={handleSaveWhatsAppSettings}
+                />
+                <PrimaryButton
+                  style={styles.flexButton}
+                  title={customer.whatsAppAutoMessageSettings.enabled ? '⏸️ إيقاف الرسائل' : '▶️ تفعيل الرسائل'}
+                  onPress={handleToggleWhatsAppAutoMessage}
+                />
+              </View>
+            </>
+          ) : null}
+        </View>
+
         <PrimaryButton title="🧹 حذف جميع الديون" variant="danger" onPress={handleDeleteAllDebts} />
         <View style={styles.actionGrid}>
           <PrimaryButton style={styles.flexButton} title="تعديل الزبون" variant="secondary" onPress={() => navigation.navigate('CustomerForm', { customerId: customer.id })} />
@@ -497,5 +634,66 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     color: '#8A4B14',
     fontWeight: '800',
+  },
+  messageTypeGrid: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  messageTypeButton: {
+    flex: 1,
+    minWidth: 80,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: '#F4E1C1',
+    borderWidth: 1,
+    borderColor: '#E6D6BC',
+    alignItems: 'center',
+  },
+  messageTypeButtonActive: {
+    backgroundColor: '#8A4B14',
+    borderColor: '#8A4B14',
+  },
+  messageTypeButtonPressed: {
+    opacity: 0.8,
+  },
+  messageTypeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6A5440',
+    textAlign: 'center',
+  },
+  messageTypeTextActive: {
+    color: '#FFF8ED',
+  },
+  delayGrid: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  delayButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#F4E1C1',
+    borderWidth: 1,
+    borderColor: '#E6D6BC',
+    alignItems: 'center',
+  },
+  delayButtonActive: {
+    backgroundColor: '#2C855A',
+    borderColor: '#2C855A',
+  },
+  delayButtonPressed: {
+    opacity: 0.8,
+  },
+  delayText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6A5440',
+  },
+  delayTextActive: {
+    color: '#FFF8ED',
   },
 });

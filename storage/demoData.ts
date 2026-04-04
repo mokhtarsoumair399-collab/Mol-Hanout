@@ -1,5 +1,5 @@
-import { Customer } from '../utils/types';
-import { defaultDebtReminderSettings } from '../utils/factories';
+import { Customer, InventoryItem } from '../utils/types';
+import { defaultDebtReminderSettings, defaultWhatsAppAutoMessageSettings } from '../utils/factories';
 
 export const seedCustomers: Customer[] = [
   {
@@ -25,6 +25,7 @@ export const seedCustomers: Customer[] = [
       },
     ],
     debtReminderSettings: defaultDebtReminderSettings,
+    whatsAppAutoMessageSettings: defaultWhatsAppAutoMessageSettings,
   },
   {
     id: 'customer-2',
@@ -45,6 +46,12 @@ export const seedCustomers: Customer[] = [
       enabled: true,
       hour: 10,
       minute: 30,
+    },
+    whatsAppAutoMessageSettings: {
+      enabled: true,
+      messageType: 'both',
+      followupDelayDays: 5,
+      autoSendOnPayment: true,
     },
   },
   {
@@ -70,6 +77,7 @@ export const seedCustomers: Customer[] = [
       },
     ],
     debtReminderSettings: defaultDebtReminderSettings,
+    whatsAppAutoMessageSettings: defaultWhatsAppAutoMessageSettings,
   },
   {
     id: 'customer-4',
@@ -91,5 +99,62 @@ export const seedCustomers: Customer[] = [
       hour: 18,
       minute: 0,
     },
+    whatsAppAutoMessageSettings: {
+      enabled: false,
+      messageType: 'reminder',
+      followupDelayDays: 7,
+      autoSendOnPayment: false,
+    },
+  },
+];
+
+export const seedInventory: InventoryItem[] = [
+  {
+    id: 'inv-1',
+    name: 'زيت الزيتون',
+    currentStock: 15,
+    minStock: 5,
+    unit: 'لتر',
+    category: 'زيوت وتوابل',
+  },
+  {
+    id: 'inv-2',
+    name: 'سكر',
+    currentStock: 3,
+    minStock: 10,
+    unit: 'كيلو',
+    category: 'مواد أساسية',
+  },
+  {
+    id: 'inv-3',
+    name: 'أرز',
+    currentStock: 25,
+    minStock: 8,
+    unit: 'كيلو',
+    category: 'مواد أساسية',
+  },
+  {
+    id: 'inv-4',
+    name: 'شاي أخضر',
+    currentStock: 2,
+    minStock: 5,
+    unit: 'كيلو',
+    category: 'مشروبات',
+  },
+  {
+    id: 'inv-5',
+    name: 'قهوة',
+    currentStock: 12,
+    minStock: 3,
+    unit: 'كيلو',
+    category: 'مشروبات',
+  },
+  {
+    id: 'inv-6',
+    name: 'حليب مجفف',
+    currentStock: 8,
+    minStock: 4,
+    unit: 'علبة',
+    category: 'ألبان',
   },
 ];

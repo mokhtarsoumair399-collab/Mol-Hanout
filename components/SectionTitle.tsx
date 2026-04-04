@@ -11,5 +11,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#2E241B',
     textAlign: 'right',
+    marginTop: 8,
   },
 });
