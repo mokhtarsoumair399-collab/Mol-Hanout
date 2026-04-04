@@ -47,6 +47,9 @@ npx eas build -p ios --profile production
 * Dashboard with total debts, number of customers, and top debtors.
 * Customer detail screen with transaction history.
 * WhatsApp reminder button.
+* **Bulk WhatsApp messaging** - Send messages to multiple customers at once.
+* **Auto-message settings** - Configure automatic reminders, followups, and payment confirmations per customer.
+* **Inventory management** - Track products, stock levels, and low stock alerts.
 * Automatic daily local notifications configurable per customer.
 * Per-customer reminder dropdown with a built-in time picker.
 * Instant test notification button for checking reminder delivery.
@@ -107,6 +110,9 @@ npx eas build -p ios --profile production
 * لوحة ملخص تعرض إجمالي الديون وعدد الزبائن وأكبر المدينين.
 * شاشة تفاصيل لكل زبون مع سجل المعاملات.
 * زر إرسال تذكير عبر واتساب.
+* **إرسال رسائل جماعية عبر واتساب** - إرسال رسائل لعدة زبائن دفعة واحدة.
+* **إعدادات الرسائل التلقائية** - تكوين تذكيرات تلقائية ومتابعات وتأكيدات دفع لكل زبون.
+* **إدارة المخزون** - تتبع المنتجات ومستويات المخزون وتنبيهات المخزون المنخفض.
 * إشعارات محلية تلقائية يومية قابلة للتخصيص لكل زبون.
 * قسم منسدل لكل زبون لإعداد التذكير مع منتقي وقت.
 * زر اختبار فوري لإرسال إشعار تجريبي مباشرة.
@@ -167,6 +173,9 @@ npx eas build -p ios --profile production
 * Tableau de bord avec statistiques.
 * Détails client avec historique.
 * Rappel WhatsApp.
+* **Messagerie WhatsApp en masse** - Envoyer des messages à plusieurs clients simultanément.
+* **Paramètres de messages automatiques** - Configurer des rappels automatiques, suivis et confirmations de paiement par client.
+* **Gestion des stocks** - Suivre les produits, niveaux de stock et alertes de stock faible.
 * Notifications locales quotidiennes configurables par client.
 * Sélecteur d'heure intégré dans le rappel de chaque client.
 * Bouton de test pour envoyer une notification immédiate.
@@ -217,6 +226,9 @@ npx eas build -p ios --profile production
 * Panel con estadísticas.
 * Historial de transacciones.
 * Recordatorios por WhatsApp.
+* **Mensajería WhatsApp masiva** - Enviar mensajes a múltiples clientes a la vez.
+* **Configuración de mensajes automáticos** - Configurar recordatorios automáticos, seguimientos y confirmaciones de pago por cliente.
+* **Gestión de inventario** - Rastrear productos, niveles de stock y alertas de stock bajo.
 * Notificaciones locales diarias configurables por cliente.
 * Selector de hora integrado para el recordatorio de cada cliente.
 * Botón de prueba para enviar una notificación inmediata.
@@ -260,6 +272,9 @@ npx eas build -p ios --profile production
 * Schuldenverfolgung.
 * Dashboard mit Statistiken.
 * WhatsApp-Erinnerungen.
+* **WhatsApp-Massenversand** - Nachrichten an mehrere Kunden gleichzeitig senden.
+* **Automatische Nachrichteneinstellungen** - Automatische Erinnerungen, Nachverfolgungen und Zahlungsbestätigungen pro Kunde konfigurieren.
+* **Bestandsverwaltung** - Produkte, Lagerbestände und niedrige Lagerbestands-Warnungen verfolgen.
 * Tägliche lokale Benachrichtigungen pro Kunde konfigurierbar.
 * Integrierter Zeitwähler und Soforttest für Kundenerinnerungen.
 * Transaktionshistorie.
