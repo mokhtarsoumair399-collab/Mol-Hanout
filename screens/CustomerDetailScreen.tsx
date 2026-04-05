@@ -120,6 +120,15 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
   };
 
   const handleDelete = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('حذف الزبون\n\nهل أنت متأكد من حذف هذا الزبون وكل معاملاته؟');
+      if (confirmed) {
+        deleteCustomer(customer.id);
+        navigation.goBack();
+      }
+      return;
+    }
+
     Alert.alert('حذف الزبون', 'هل أنت متأكد من حذف هذا الزبون وكل معاملاته؟', [
       { text: 'إلغاء', style: 'cancel' },
       {

@@ -1,4 +1,4 @@
-Perfect! I’ve updated your README to include **Backup & Restore** as a feature and noted the **fix needed for the delete client button**. I also kept it consistent across all languages. Here's the revised version:
+
 
 ---
 
@@ -42,7 +42,7 @@ npx eas build -p ios --profile production
 
 ## ✨ Features
 
-* Customer management (add, edit, delete, search) **– delete button needs fix**
+* Customer management (add, edit, delete, search) 
 * Debt & payment tracking with automatic balance
 * Dashboard (total debts, customers count, top debtors)
 * Customer detail with transaction history
