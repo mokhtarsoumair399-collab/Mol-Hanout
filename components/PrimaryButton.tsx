@@ -6,21 +6,25 @@ export function PrimaryButton({
   onPress,
   variant = 'primary',
   style,
+  disabled = false,
 }: {
   title: string;
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'danger';
   style?: StyleProp<ViewStyle>;
+  disabled?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
       style={({ pressed }) => [
         styles.button,
         style,
         variant === 'secondary' && styles.secondaryButton,
         variant === 'danger' && styles.dangerButton,
-        pressed && styles.pressed,
+        disabled && styles.disabledButton,
+        pressed && !disabled && styles.pressed,
       ]}
     >
       <Text
@@ -68,5 +72,8 @@ const styles = StyleSheet.create({
   },
   dangerTitle: {
     color: '#9D3129',
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
 });

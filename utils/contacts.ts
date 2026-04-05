@@ -1,4 +1,4 @@
-import * as Contacts from 'expo-contacts';
+import { Platform } from 'react-native';
 
 export type DeviceContact = {
   id: string;
@@ -7,6 +7,11 @@ export type DeviceContact = {
 };
 
 export async function requestContactsAccess() {
+  if (Platform.OS === 'web') {
+    return false;
+  }
+
+  const Contacts = await import('expo-contacts');
   const existingPermission = await Contacts.getPermissionsAsync();
   if (existingPermission.granted) {
     return true;
@@ -17,6 +22,11 @@ export async function requestContactsAccess() {
 }
 
 export async function loadDeviceContacts(): Promise<DeviceContact[]> {
+  if (Platform.OS === 'web') {
+    return [];
+  }
+
+  const Contacts = await import('expo-contacts');
   const { data } = await Contacts.getContactsAsync({
     fields: [Contacts.Fields.PhoneNumbers],
     sort: Contacts.SortTypes.FirstName,

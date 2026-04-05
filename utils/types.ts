@@ -60,3 +60,10 @@ export type InventoryInput = {
   unit: string;
   category: string;
 };
+
+export type AppBackupData = {
+  version: '1';
+  exportedAt: string;
+  customers: Customer[];
+  inventory: InventoryItem[];
+};

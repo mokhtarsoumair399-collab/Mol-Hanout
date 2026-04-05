@@ -1,7 +1,14 @@
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import { seedCustomers, seedInventory } from '../storage/demoData';
-import { loadCustomers, saveCustomers } from '../storage/appStorage';
+import {
+  loadCustomers,
+  loadInventory,
+  saveCustomers,
+  saveInventory,
+  serializeAppBackupData,
+  parseAppBackupData,
+} from '../storage/appStorage';
 import { defaultDebtReminderSettings } from '../utils/factories';
 import {
   requestDebtNotificationPermission,
@@ -9,13 +16,14 @@ import {
   syncDebtNotifications,
 } from '../utils/notifications';
 import {
+  AppBackupData,
   Customer,
   CustomerInput,
   DebtReminderSettings,
-  Transaction,
-  TransactionInput,
   InventoryItem,
   InventoryInput,
+  Transaction,
+  TransactionInput,
   WhatsAppAutoMessageSettings,
 } from '../utils/types';
 import { createCustomer, createTransaction } from '../utils/factories';
@@ -51,6 +59,8 @@ type AppContextValue = {
   addInventoryItem: (input: InventoryInput) => void;
   updateInventoryItem: (itemId: string, input: InventoryInput) => void;
   deleteInventoryItem: (itemId: string) => void;
+  exportData: () => string;
+  importData: (payload: string) => void;
 };
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -64,8 +74,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const hydrate = async () => {
       try {
         const storedCustomers = await loadCustomers();
+        const storedInventory = await loadInventory();
         setCustomers(storedCustomers.length ? storedCustomers : seedCustomers);
-        setInventory(seedInventory);
+        setInventory(storedInventory.length ? storedInventory : seedInventory);
       } catch (error) {
         setCustomers(seedCustomers);
         setInventory(seedInventory);
@@ -84,8 +95,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       saveCustomers(customers).catch(() => {
         Alert.alert('تنبيه', 'تعذر حفظ التغييرات محلياً.');
       });
+      saveInventory(inventory).catch(() => {
+        Alert.alert('تنبيه', 'تعذر حفظ المخزون محلياً.');
+      });
     }
-  }, [customers, loading]);
+  }, [customers, inventory, loading]);
 
   useEffect(() => {
     if (loading || Platform.OS === 'web') {
@@ -295,6 +309,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const customersToMessage = customers.filter(customer => customerIds.includes(customer.id));
         const { sendBulkWhatsAppMessages } = await import('../utils/whatsapp');
         return sendBulkWhatsAppMessages(customersToMessage, messageType, dueDate, customMessage);
+      },
+      exportData: () => {
+        const backupData: AppBackupData = {
+          version: '1',
+          exportedAt: new Date().toISOString(),
+          customers,
+          inventory,
+        };
+        return serializeAppBackupData(backupData);
+      },
+      importData: (payload: string) => {
+        const parsedBackup = parseAppBackupData(payload);
+        setCustomers(parsedBackup.customers);
+        setInventory(parsedBackup.inventory);
       },
     }),
     [customers, inventory, loading],

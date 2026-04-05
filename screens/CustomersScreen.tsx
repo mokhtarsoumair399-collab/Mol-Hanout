@@ -1,5 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArabicInput } from '../components/ArabicInput';
 import { CustomerCard } from '../components/CustomerCard';
 import { EmptyState } from '../components/EmptyState';
@@ -7,23 +9,45 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionTitle } from '../components/SectionTitle';
 import { useAppContext } from '../context/AppContext';
+import { MainTabParamList, RootStackParamList } from '../navigation/AppNavigator';
 
-export function CustomersScreen({ navigation }: { navigation: any }) {
+export function CustomersScreen({ navigation }: { navigation: BottomTabNavigationProp<MainTabParamList, 'Customers'> }) {
   const { customers, loading } = useAppContext();
   const [search, setSearch] = useState('');
-  const rootNavigation = navigation.getParent();
+  const parentStackNavigation =
+    (navigation.getParent() as NativeStackNavigationProp<RootStackParamList> | undefined) ??
+    (navigation.getParent()?.getParent() as NativeStackNavigationProp<RootStackParamList> | undefined);
+  const navigationAny = navigation as any;
+
+  const openCustomerForm = () => {
+    if (parentStackNavigation) {
+      parentStackNavigation.navigate('CustomerForm');
+      return;
+    }
+
+    navigationAny.navigate('CustomerForm');
+  };
+
+  const openCustomerDetail = (customerId: string) => {
+    if (parentStackNavigation) {
+      parentStackNavigation.navigate('CustomerDetail', { customerId });
+      return;
+    }
+
+    navigationAny.navigate('CustomerDetail', { customerId });
+  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: true,
       title: 'الزبائن',
       headerRight: () => (
-        <Text onPress={() => rootNavigation?.navigate('CustomerForm')} style={styles.headerButton}>
+        <Text onPress={openCustomerForm} style={styles.headerButton}>
           ➕ إضافة
         </Text>
       ),
     });
-  }, [navigation, rootNavigation]);
+  }, [navigation, openCustomerForm]);
 
   const filteredCustomers = customers.filter((customer) =>
     customer.name.toLowerCase().includes(search.trim().toLowerCase()),
@@ -38,7 +62,7 @@ export function CustomersScreen({ navigation }: { navigation: any }) {
         onChangeText={setSearch}
         placeholder="اكتب اسم الزبون"
       />
-      <PrimaryButton title="➕ إضافة زبون جديد" onPress={() => rootNavigation?.navigate('CustomerForm')} />
+      <PrimaryButton title="➕ إضافة زبون جديد" onPress={openCustomerForm} />
 
       {loading ? (
         <Text style={styles.loading}>جاري تحميل البيانات...</Text>
@@ -47,7 +71,7 @@ export function CustomersScreen({ navigation }: { navigation: any }) {
           <CustomerCard
             key={customer.id}
             customer={customer}
-            onPress={() => rootNavigation?.navigate('CustomerDetail', { customerId: customer.id })}
+            onPress={() => openCustomerDetail(customer.id)}
           />
         ))
       ) : (

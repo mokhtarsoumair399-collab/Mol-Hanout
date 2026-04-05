@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, FlatList, Modal, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Modal, Platform, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ArabicInput } from '../components/ArabicInput';
 import { EmptyState } from '../components/EmptyState';
@@ -41,6 +41,11 @@ export function CustomerFormScreen({ navigation, route }: Props) {
   };
 
   const handleImportFromContacts = async () => {
+    if (Platform.OS === 'web') {
+      Alert.alert('تنبيه', 'استيراد جهات الاتصال غير مدعوم على الويب.');
+      return;
+    }
+
     setContactsLoading(true);
     try {
       const granted = await requestContactsAccess();
@@ -84,7 +89,11 @@ export function CustomerFormScreen({ navigation, route }: Props) {
           title={contactsLoading ? 'جاري تحميل جهات الاتصال...' : '📇 اختيار من جهات الاتصال'}
           variant="secondary"
           onPress={handleImportFromContacts}
+          disabled={Platform.OS === 'web'}
         />
+        {Platform.OS === 'web' && (
+          <Text style={styles.webInfoText}>استيراد جهات الاتصال غير مدعوم على الويب.</Text>
+        )}
         <PrimaryButton title={editingCustomer ? 'حفظ التعديلات' : 'حفظ الزبون'} onPress={handleSave} />
       </View>
     </ScreenContainer>
@@ -204,5 +213,11 @@ const styles = StyleSheet.create({
   },
   pickButton: {
     alignSelf: 'stretch',
+  },
+  webInfoText: {
+    marginTop: 12,
+    color: '#6A5440',
+    textAlign: 'right',
+    fontSize: 14,
   },
 });

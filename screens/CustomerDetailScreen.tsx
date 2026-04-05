@@ -22,6 +22,7 @@ import { makePhoneCall, openWhatsAppChat, sendSmsMessage } from '../utils/commun
 import { getCustomerBalance } from '../utils/balance';
 import { formatCurrency, formatDate, formatDateToIso } from '../utils/formatters';
 import { showToast } from '../utils/toast';
+import { defaultWhatsAppAutoMessageSettings } from '../utils/factories';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CustomerDetail'>;
 
@@ -336,8 +337,14 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
             <View style={styles.reminderHeaderTextWrap}>
               <Text style={styles.reminderTitle}>💬 رسائل واتساب التلقائية</Text>
               <Text style={styles.helperText}>
-                {customer.whatsAppAutoMessageSettings.enabled
-                  ? `مفعل - ${customer.whatsAppAutoMessageSettings.messageType === 'both' ? 'تذكير + متابعة' : customer.whatsAppAutoMessageSettings.messageType === 'followup' ? 'متابعة فقط' : 'تذكير فقط'}`
+                {customer.whatsAppAutoMessageSettings?.enabled ?? defaultWhatsAppAutoMessageSettings.enabled
+                  ? `مفعل - ${
+                      (customer.whatsAppAutoMessageSettings?.messageType ?? defaultWhatsAppAutoMessageSettings.messageType) === 'both'
+                        ? 'تذكير + متابعة'
+                        : (customer.whatsAppAutoMessageSettings?.messageType ?? defaultWhatsAppAutoMessageSettings.messageType) === 'followup'
+                        ? 'متابعة فقط'
+                        : 'تذكير فقط'
+                    }`
                   : 'فعّل الرسائل التلقائية عبر واتساب لهذا الزبون.'}
               </Text>
             </View>

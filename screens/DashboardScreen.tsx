@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, Pressable, Modal, Alert } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Platform, StyleSheet, Text, View, ScrollView, Pressable, Modal, Alert, Share } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as DocumentPicker from 'expo-document-picker';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionTitle } from '../components/SectionTitle';
 import { StatCard } from '../components/StatCard';
@@ -10,21 +12,26 @@ import { useAppContext } from '../context/AppContext';
 import { getCustomerBalance, getTopDebtor, getTotalDebts, getLowStockItems, getOutOfStockItems } from '../utils/balance';
 import { formatCurrency } from '../utils/formatters';
 import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { MainTabParamList, RootStackParamList } from '../navigation/AppNavigator';
 import { InventoryInput, InventoryItem } from '../utils/types';
 
 const DashboardScreen: React.FC = () => {
-  const { 
-    customers, 
-    inventory, 
-    addInventoryItem, 
-    updateInventoryItem, 
+  const {
+    customers,
+    inventory,
+    addInventoryItem,
+    updateInventoryItem,
     deleteInventoryItem,
     sendBulkWhatsAppMessages,
+    exportData,
+    importData,
   } = useAppContext();
-  const navigation = useNavigation();
-  const rootNavigation = navigation.getParent?.();
+  const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList, 'Dashboard'>>();
+  const stackNavigation =
+    (navigation.getParent() as NativeStackNavigationProp<RootStackParamList> | undefined) ??
+    (navigation.getParent()?.getParent() as NativeStackNavigationProp<RootStackParamList> | undefined);
   const topDebtor = getTopDebtor(customers);
   const topDebtorBalance = topDebtor ? getCustomerBalance(topDebtor) : 0;
   const customersWithReminder = customers.filter((customer) => customer.debtReminderSettings.enabled);
@@ -47,6 +54,7 @@ const DashboardScreen: React.FC = () => {
   const [bulkCustomMessage, setBulkCustomMessage] = useState('');
   const [bulkDueDate, setBulkDueDate] = useState<Date>(new Date());
   const [includeBulkDueDate, setIncludeBulkDueDate] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Inventory CRUD functions
   const openAddItemModal = () => {
@@ -101,6 +109,14 @@ const DashboardScreen: React.FC = () => {
   };
 
   const handleDeleteItem = (item: InventoryItem) => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`هل أنت متأكد من حذف "${item.name}"؟`);
+      if (confirmed) {
+        deleteInventoryItem(item.id);
+      }
+      return;
+    }
+
     Alert.alert(
       'تأكيد الحذف',
       `هل أنت متأكد من حذف "${item.name}"؟`,
@@ -158,6 +174,96 @@ const DashboardScreen: React.FC = () => {
     
     setBulkMessageModalVisible(false);
   };
+
+  const handleExportBackup = async () => {
+    try {
+      const backupJson = exportData();
+      const filename = `mol-hanout-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+
+      if (Platform.OS === 'web') {
+        const blob = new Blob([backupJson], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const element = document.createElement('a');
+        element.href = url;
+        element.download = filename;
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        URL.revokeObjectURL(url);
+        Alert.alert('نجاح', 'تم تنزيل النسخة الاحتياطية بنجاح.');
+      } else if (Platform.OS === 'android') {
+        const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+        if (!permissions.granted || !permissions.directoryUri) {
+          Alert.alert('تنبيه', 'لم يتم اختيار مجلد الحفظ.');
+          return;
+        }
+
+        const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(
+          permissions.directoryUri,
+          filename,
+          'application/json',
+        );
+
+        await FileSystem.StorageAccessFramework.writeAsStringAsync(fileUri, backupJson, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+        Alert.alert('نجاح', 'تم حفظ النسخة الاحتياطية في المجلد الذي اخترته.');
+      } else {
+        if (!FileSystem.documentDirectory) {
+          throw new Error('Document directory unavailable');
+        }
+
+        const fileUri = `${FileSystem.documentDirectory}${filename}`;
+        await FileSystem.writeAsStringAsync(fileUri, backupJson, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+        await Share.share({ url: fileUri, title: 'Mol Hanout Backup' });
+        Alert.alert('نجاح', 'تم إنشاء نسخة احتياطية وحفظها كملف.');
+      }
+    } catch (error) {
+      Alert.alert('تنبيه', 'حدث خطأ أثناء حفظ النسخة الاحتياطية. حاول مرة أخرى.');
+    }
+  };
+
+  const handleFileInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) {
+        return;
+      }
+
+      const content = await file.text();
+      importData(content);
+      Alert.alert('نجاح', 'تم استعادة البيانات من الملف بنجاح.');
+    } catch (error) {
+      Alert.alert('تنبيه', 'تعذر استيراد الملف. تأكد من تحديد ملف JSON صالح.');
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleImportBackup = async () => {
+    if (Platform.OS === 'web') {
+      fileInputRef.current?.click();
+      return;
+    }
+
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: 'application/json', copyToCacheDirectory: true });
+      if (result.canceled || result.assets.length === 0 || !result.assets[0].uri) {
+        return;
+      }
+
+      const content = await FileSystem.readAsStringAsync(result.assets[0].uri, { encoding: FileSystem.EncodingType.UTF8 });
+      importData(content);
+      Alert.alert('نجاح', 'تم استعادة البيانات من الملف بنجاح.');
+    } catch (error) {
+      Alert.alert('تنبيه', 'تعذر استيراد الملف. تأكد من تحديد ملف JSON صالح.');
+    }
+  };
+
   const sortedCustomers = [...customers].sort((a, b) => {
     const balanceA = getCustomerBalance(a);
     const balanceB = getCustomerBalance(b);
@@ -217,7 +323,7 @@ const DashboardScreen: React.FC = () => {
             <Pressable
               key={customer.id}
               style={({ pressed }) => [styles.customerRow, pressed && styles.customerRowPressed]}
-              onPress={() => rootNavigation?.navigate('CustomerDetail', { customerId: customer.id })}
+              onPress={() => stackNavigation?.navigate('CustomerDetail', { customerId: customer.id })}
             >
               <View style={styles.customerInfo}>
                 <Text style={styles.customerName}>{customer.name}</Text>
@@ -244,7 +350,7 @@ const DashboardScreen: React.FC = () => {
         {customers.length > 5 && (
           <Pressable
             style={({ pressed }) => [styles.showMoreButton, pressed && styles.showMorePressed]}
-            onPress={() => rootNavigation?.navigate('Customers')}
+            onPress={() => navigation.navigate('Customers')}
           >
             <Text style={styles.showMoreText}>عرض جميع الزبائن ({customers.length})</Text>
           </Pressable>
@@ -252,6 +358,18 @@ const DashboardScreen: React.FC = () => {
       </View>
 
       <PrimaryButton title="💬 إرسال رسائل جماعية عبر واتساب" onPress={openBulkMessageModal} />
+      <PrimaryButton
+        title="💾 حفظ نسخة احتياطية إلى ملف"
+        variant="secondary"
+        onPress={handleExportBackup}
+        style={{ marginTop: 12 }}
+      />
+      <PrimaryButton
+        title="♻️ استعادة من ملف"
+        variant="secondary"
+        onPress={handleImportBackup}
+        style={{ marginTop: 12 }}
+      />
 
       <SectionTitle>📊 dashboard (شحال عندك / شحال خاصك تجيب)</SectionTitle>
       <View style={styles.grid}>
@@ -536,6 +654,15 @@ const DashboardScreen: React.FC = () => {
           </View>
         </View>
       </Modal>
+      {Platform.OS === 'web' && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json"
+          style={{ display: 'none' }}
+          onChange={handleFileInputChange}
+        />
+      )}
     </ScreenContainer>
   );
 };
